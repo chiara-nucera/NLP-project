@@ -1,0 +1,63 @@
+# onfiguration file with training enabled
+seed: 42 #Random seed to ensure reproducible results
+
+data:
+  fever:
+    enabled: true #Enables the FEVER dataset
+    train_jsonl: "Data/Fever/train.jsonl" #Path to FEVER training file
+    wiki_pages_dir: "Data/Fever/wiki-pages" #Directory containing Wikipedia pages
+    max_examples: 200 #Limits the number of FEVER examples
+  hotpotqa:
+    enabled: true #Enables the HotpotQA dataset
+    train_json: "C:/Users/chiar/hotpot_dev_distractor_v1.jsonl" #Path to HotpotQA data
+    max_examples: 200 #Limits the number of HotpotQA examples
+
+retrieval:
+  k: 20 #Number of passages retrieved for each query
+  use_bm25: true #Enables sparse BM25 retrieval
+  use_dense: true #Enables dense retrieval with embeddings
+  dense_model: "sentence-transformers/all-MiniLM-L6-v2" #Dense retriever base model
+  bm25_tokenizer: "simple" #Tokenizer used by BM25
+  max_corpus_sentences: 200000 #Maximum number of indexed corpus sentences
+
+poisoning:
+  enabled: false #Disables poisoning in this configuration
+  rate: 0.1 #Poisoning rate (ignored because poisoning is disabled)
+  strategy: "contradictory_passage" #Poisoning strategy type
+  target: "retrieval_set" #Poisoning target (retrieved passages)
+
+verification:
+  nli_model: "roberta-large-mnli" #NLI model used for verification
+  contradiction_threshold: 0.55 #Threshold for strong contradiction
+  entailment_threshold: 0.55 #Threshold for strong entailment
+  top_n_verify: 7 #Number of top retrieved passages verified with NLI
+
+generation:
+  enabled: false #Disables answer generation
+  provider: "hf" #Generation provider
+  max_new_tokens: 64 #Maximum number of generated tokens
+  hf_model: "google/flan-t5-base" #Generation model
+  num_samples: 1 #Number of generated samples per query
+
+evaluation:
+  compute_self_consistency: true #Enables self-consistency evaluation
+
+training:
+  enabled: true #Enables training and fine-tuning
+  output_dir: "outputs" #Directory where trained models are saved
+
+  # NLI fine-tuning (FEVER)
+  nli:
+    base_model: "roberta-large-mnli" #Base NLI model before fine-tuning
+    epochs: 1 #Number of training epochs
+    batch_size: 8 #Batch size for NLI training
+    lr: 2e-5 #Learning rate for NLI fine-tuning
+    max_train_pairs: 2000 #Maximum number of NLI training pairs
+
+  # Retriever fine-tuning (Sentence-Transformers bi-encoder)
+  retriever:
+    base_model: "sentence-transformers/all-MiniLM-L6-v2" #Base retriever model
+    epochs: 1 #Number of training epochs
+    batch_size: 32 #Batch size for retriever training
+    lr: 2e-5 #Learning rate for retriever fine-tuning
+    max_train_pairs: 2000 #Maximum number of retriever training pairs
